@@ -1,0 +1,36 @@
+{
+    "name": "www",
+    "version": "0.0.1",
+    "description": "Simple wrapper over nodejs request. Promise",
+    "repository": "https://github.com/ivanpestov/www/blob/master/README.md",
+    "scripts": {
+        "test:eslint": "fswatch test/eslint.js .eslintrc.js | xargs -I% bash -c 'clear &&  npx eslint test/eslint.js && node test/eslint.js'",
+        "test": "mocha",
+        "doc" : "jsdoc -p -r -d doc src",
+        "debug": "mocha --inspect-brk",
+        "check:test": "eslint test/",
+        "check:src": "eslint src/",
+        "pretty": "npx prettier --write .",
+        "sync": "fswatch src/ test/ | xargs -I% bash -c 'clear && npm run deploy'",
+        "deploy": "rsync -rl --exclude logs/ --include node_modules/app  --exclude 'node_modules/*' ./ vps:~/www/report && date"
+    },
+    "dependencies": {
+        "debug": "^4.1.1"
+    },
+    "devDependencies": {
+        "@types/node": "^14.0.27",
+        "chai": "^4.2.0",
+        "eslint": "^7.7.0",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-config-standard": "^14.1.1",
+        "eslint-plugin-import": "^2.22.0",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-standard": "^4.0.1",
+        "mocha": "^8.1.1",
+        "prettier": "2.0.5"
+    },
+    "keywords": ["http", "https", "request"],
+    "author": "",
+    "license": "ISC"
+}
