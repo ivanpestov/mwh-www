@@ -1,8 +1,10 @@
 /**
  * Wrapper for native nodejs request
  * response Promise with native node {@link http.IncomingMessage}
- * @module www
+ * @module
  */
+
+const validateStatusCode = require("./validateStatusCode");
 
 /**
  * It's extend nodejs {@link http.IncomingMessage} with property "body" as string
@@ -16,53 +18,20 @@
  *
  */
 
-const debug = require("debug");
-const dGet = debug("get:info");
-const dGetDebug = debug("get:debug");
+const d = require("debug");
+const dInfo = d("www:info");
+const dBrk = d("www:break");
+const dErr = d("www:err");
+const dDebug = d("www:debug");
 const http = require("http");
 const https = require("https");
 
-let minIntervalForRequest = 5;
+let minIntervalForRequest = 50,
+    currentMinIntervalForRequest;
+let maxNumParallelRequests = 5;
+let countParallelRequest = 0;
+let remainRequests = Number.MAX_SAFE_INTEGER;
 let timeStampLastRequest = Date.now() - minIntervalForRequest;
-
-/**
- *
- * @param res
- * @param options
- * @param resolve
- * @param reject
- * @private
- * @return {boolean}
- */
-function validateStatusCode(res, options, resolve, reject) {
-    let requestIsDone = true;
-    const { headers, statusCode } = res;
-    const location = headers["location"];
-    switch (statusCode) {
-        case 200:
-        case 202:
-        case 201:
-            break;
-        case 301:
-        case 302:
-        case 303:
-        case 307:
-        case 308:
-            requestIsDone = false;
-            dGet(
-                `Redirect url: ${url} statusCode: ${statusCode}`
-            );
-            get(location, options).then(resolve, reject);
-            break;
-        case 401:
-            reject(new Error(`Unauthorized ${headers["www-authenticate"]}`));
-            break;
-        default:
-            dGetDebug(`StatusCode: ${statusCode}`);
-    }
-    return requestIsDone;
-}
-
 
 /**
  *
@@ -71,20 +40,39 @@ function validateStatusCode(res, options, resolve, reject) {
  * @return {Promise<response>}
  */
 function request(url, options) {
-    dGetDebug(`Url: ${url}`);
-    return new Promise(async (resolve, reject) => {
-        const actualOptions = validateOptions(options, resolve, reject);
-        actualOptions.method = actualOptions.method || 'GET';
+    const actualOptions = _validateOptions(options);
+    dDebug(`Url: ${url}`);
+    let executor = (resolve, reject) => {
+        dDebug(`remainRequests = ${remainRequests}`);
+        dDebug(`countParallelRequest = ${countParallelRequest}`);
         let countOfBadRequests = 0;
         let web,
             // Обозначает что запрос завершен и результат может быть resolve
             requestIsDone = true;
-        startRequest();
+        if (remainRequests > 90) {
+            --currentMinIntervalForRequest;
+            currentMinIntervalForRequest = currentMinIntervalForRequest <= 0 ? 0 : currentMinIntervalForRequest;
+        } else {
+            currentMinIntervalForRequest = (currentMinIntervalForRequest || 1) * 1.03;
+            currentMinIntervalForRequest = currentMinIntervalForRequest > 1000 ? 1000 : currentMinIntervalForRequest;
+        }
+        if (!remainRequests) {
+            setTimeout(() => {
+                dBrk("BRK");
+                remainRequests = 100;
+            }, 1000);
+
+        }
+        if (remainRequests > 0 && countParallelRequest < maxNumParallelRequests) {
+            startRequest();
+        } else {
+            setTimeout(executor, currentMinIntervalForRequest, resolve, reject);
+        }
 
         function startRequest() {
-            while (Date.now() - timeStampLastRequest < minIntervalForRequest) {
-            }
-            dGetDebug(`DiffTime = ${Date.now() - timeStampLastRequest}`);
+            /* eslint-disable-next-line no-empty */
+            ++countParallelRequest;
+            dDebug(`DiffTime = ${Date.now() - timeStampLastRequest}`);
             timeStampLastRequest = Date.now();
             if (url.indexOf("https:") === 0) {
                 web = https;
@@ -94,24 +82,32 @@ function request(url, options) {
                 reject(new Error(`Unsupported protocol for url: "${url}"`));
             }
 
-            const req = web.get(url, options || {}, (res) => {
+            const req = web.get(url, actualOptions, (res) => {
+                --countParallelRequest;
                 let { statusCode, headers } = res;
                 const contentLength = headers["content-length"];
-                dGetDebug(
+                remainRequests = headers["x-ratelimit-remaining"];
+                dErr(currentMinIntervalForRequest, remainRequests);
+                // dErr(headers['x-ratelimit-limit']);
+                // dErr(headers['x-lognex-retry-timeinterval']);
+                // dErr(headers['x-lognex-reset']);
+                // dErr(headers['x-lognex-retry-after']);
+
+                dDebug(
                     `Get response for url: ${url} code: ${statusCode} message: ${res.statusMessage}`
                 );
-                dGetDebug(`content length: ${contentLength}`);
-                requestIsDone = validateStatusCode(res, options, resolve, reject);
+                dDebug(`content length: ${contentLength}`);
+                requestIsDone = validateStatusCode(res, actualOptions, resolve, reject, request, url);
                 let body = "";
                 res.setEncoding("utf-8");
                 res.on("data", (data) => {
                     body += data;
                 });
                 res.on("error", (err) => {
-                    dGet(`Error on response ${err.message}`);
+                    err(`Error on response ${err.message}`);
                     if (countOfBadRequests < 2) {
                         countOfBadRequests++;
-                        process.nextTick(startRequest);
+                        process.nextTick(executor, resolve, reject);
                     } else {
                         reject(err);
                     }
@@ -119,12 +115,12 @@ function request(url, options) {
                 res.on("end", () => {
                     res.body = body;
                     if (requestIsDone) {
-                        dGet(
+                        dInfo(
                             `Success response for url: ${url} statusCode: ${statusCode}`
                         );
                         resolve(res);
                     } else {
-                        dGet(
+                        dInfo(
                             `Bad response for url: ${url} statusCode: ${statusCode}`
                         );
                         reject("Cant get body");
@@ -132,7 +128,7 @@ function request(url, options) {
                 });
             });
             req.on("error", (e) => {
-                dGet(`Error on request ${e.message}`);
+                dInfo(`Error on request ${e.message}`);
                 if (countOfBadRequests < 2) {
                     countOfBadRequests++;
                     process.nextTick(startRequest);
@@ -141,19 +137,21 @@ function request(url, options) {
                 }
             });
         }
-    });
+    };
+    return new Promise(executor);
 }
 
 /**
  *
- * @param {Object} options
+ * @param {Object} options http options for node request {@link https://nodejs.org/api/http.html#http_http_request_url_options_callback}
  * @param resolve
  * @param reject
- * @return {any}
+ * @private
+ * @return {Object}
  */
-function validateOptions(options, resolve, reject){
+function _validateOptions(options, resolve, reject) {
     const actualOptions = Object.assign({}, options);
-    actualOptions.method = actualOptions.method || 'GET';
+    actualOptions.method = actualOptions.method || "GET";
     return actualOptions;
 }
 
@@ -166,6 +164,6 @@ function validateOptions(options, resolve, reject){
  */
 exports.getFetch = function getFetch(conf) {
     const c = Object.assign({}, conf);
-    minIntervalForRequest = c.minIntervalForRequest || 0;
+    currentMinIntervalForRequest = c.minIntervalForRequest || 0;
     return request;
 };
