@@ -165,6 +165,7 @@ function validateOptions(options, resolve, reject){
  * @return {request}
  */
 exports.getFetch = function getFetch(conf) {
-    minIntervalForRequest = conf.minIntervalForRequest || 0;
+    const c = Object.assign({}, conf);
+    minIntervalForRequest = c.minIntervalForRequest || 0;
     return request;
 };
