@@ -1,13 +1,13 @@
 {
-    "name": "www",
-    "version": "0.0.2",
+    "name": "mwh-www",
+    "version": "0.0.3",
     "description": "Simple wrapper over nodejs request. Promise",
     "repository": "https://github.com/ivanpestov/www/blob/master/README.md",
     "main": "./src/www.js",
     "scripts": {
         "test:eslint": "fswatch test/eslint.js .eslintrc.js | xargs -I% bash -c 'clear &&  npx eslint test/eslint.js && node test/eslint.js'",
         "test": "mocha",
-        "doc" : "jsdoc -p -r -d doc src",
+        "doc": "jsdoc -p -r -d doc src -R README.md",
         "debug": "mocha --inspect-brk",
         "check:test": "eslint test/",
         "check:src": "eslint src/",
@@ -31,7 +31,11 @@
         "mocha": "^8.1.1",
         "prettier": "2.0.5"
     },
-    "keywords": ["http", "https", "request"],
+    "keywords": [
+        "http",
+        "https",
+        "request"
+    ],
     "author": "",
     "license": "ISC"
 }
