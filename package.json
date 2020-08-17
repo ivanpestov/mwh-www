@@ -1,8 +1,9 @@
 {
     "name": "www",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Simple wrapper over nodejs request. Promise",
     "repository": "https://github.com/ivanpestov/www/blob/master/README.md",
+    "main": "./src/www.js",
     "scripts": {
         "test:eslint": "fswatch test/eslint.js .eslintrc.js | xargs -I% bash -c 'clear &&  npx eslint test/eslint.js && node test/eslint.js'",
         "test": "mocha",
