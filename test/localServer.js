@@ -35,7 +35,7 @@ function testCuncarentStyle() {
     });
 }
 
-testCuncarentStyle();
+// testCuncarentStyle();
 
 function* generatorDocs(limit) {
     for (let i = 0; i < limit; i++) {
@@ -70,6 +70,11 @@ function getResponses(href, options) {
     return get(href, options);
 }
 
+async function testSingleRequest(){
+    const resp = await getResponses('https://online.moysklad.ru/api/remap/1.2/entity/employee', options);
+    console.log()
+}
+testSingleRequest();
 
 function getListUrls(url, count) {
     const list = [];

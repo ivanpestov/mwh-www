@@ -86,17 +86,22 @@ function request(url, options) {
                 --countParallelRequest;
                 let { statusCode, headers } = res;
                 const contentLength = headers["content-length"];
-                remainRequests = headers["x-ratelimit-remaining"];
-                dErr(currentMinIntervalForRequest, remainRequests);
-                // dErr(headers['x-ratelimit-limit']);
-                // dErr(headers['x-lognex-retry-timeinterval']);
-                // dErr(headers['x-lognex-reset']);
-                // dErr(headers['x-lognex-retry-after']);
+                const contentType = headers["content-type"];
+                /*
+                Support only application/json
+                 */
+                if (contentType.indexOf("application/json") < 0) {
+                    requestIsDone = false;
+                    reject(new Error(`Unsupported content type request ${contentType}`));
+                    return;
+                }
 
-                dDebug(
-                    `Get response for url: ${url} code: ${statusCode} message: ${res.statusMessage}`
-                );
+                remainRequests = headers["x-ratelimit-remaining"];
+
+                dErr(currentMinIntervalForRequest, remainRequests);
+                dDebug( `Get response for url: ${url} code: ${statusCode} message: ${res.statusMessage}` );
                 dDebug(`content length: ${contentLength}`);
+
                 requestIsDone = validateStatusCode(res, actualOptions, resolve, reject, request, url);
                 let body = "";
                 res.setEncoding("utf-8");
@@ -113,8 +118,8 @@ function request(url, options) {
                     }
                 });
                 res.on("end", () => {
-                    res.body = body;
                     if (requestIsDone) {
+                        res.body = JSON.parse(body);
                         dInfo(
                             `Success response for url: ${url} statusCode: ${statusCode}`
                         );
