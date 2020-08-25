@@ -92,7 +92,7 @@ function request(url, options) {
                  */
                 if (contentType.indexOf("application/json") < 0) {
                     requestIsDone = false;
-                    reject(new Error(`Unsupported content type request ${contentType}`));
+                    reject(new Error(`Server return unsupported content type request ${contentType}`));
                     return;
                 }
 
