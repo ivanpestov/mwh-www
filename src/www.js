@@ -86,7 +86,7 @@ function request(url, options) {
                 --countParallelRequest;
                 let { statusCode, headers } = res;
                 const contentLength = headers["content-length"];
-                const contentType = headers["content-type"];
+                const contentType = headers["content-type"] || '';
                 /*
                 Support only application/json
                  */
