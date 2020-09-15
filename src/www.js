@@ -42,11 +42,17 @@ let timeStampLastRequest = Date.now() - minIntervalForRequest;
  */
 function request(url, options, data) {
     let realData;
-    if(data && typeof data === 'object' && data.constructor.name === 'Object'){
+    if (
+        data &&
+        typeof data === "object" &&
+        data.constructor.name === "Object"
+    ) {
         realData = JSON.stringify(data);
-    }else if(typeof data === "string" && data.length > 0){
+    } else if (typeof data === "string" && data.length > 0) {
         realData = data;
-    }else{
+    } else if (typeof data === "undefined") {
+        realData = data;
+    } else {
         throw new TypeError(`Unsupported type of data: "${typeof data}"`);
     }
     const actualOptions = _validateOptions(options);
@@ -60,19 +66,28 @@ function request(url, options, data) {
             requestIsDone = true;
         if (remainRequests > 90) {
             --currentMinIntervalForRequest;
-            currentMinIntervalForRequest = currentMinIntervalForRequest <= 0 ? 0 : currentMinIntervalForRequest;
+            currentMinIntervalForRequest =
+                currentMinIntervalForRequest <= 0
+                    ? 0
+                    : currentMinIntervalForRequest;
         } else {
-            currentMinIntervalForRequest = (currentMinIntervalForRequest || 1) * 1.03;
-            currentMinIntervalForRequest = currentMinIntervalForRequest > 1000 ? 1000 : currentMinIntervalForRequest;
+            currentMinIntervalForRequest =
+                (currentMinIntervalForRequest || 1) * 1.03;
+            currentMinIntervalForRequest =
+                currentMinIntervalForRequest > 1000
+                    ? 1000
+                    : currentMinIntervalForRequest;
         }
         if (!remainRequests) {
             setTimeout(() => {
                 dBrk("BRK");
                 remainRequests = 100;
             }, 1000);
-
         }
-        if (remainRequests > 0 && countParallelRequest < maxNumParallelRequests) {
+        if (
+            remainRequests > 0 &&
+            countParallelRequest < maxNumParallelRequests
+        ) {
             startRequest();
         } else {
             setTimeout(executor, currentMinIntervalForRequest, resolve, reject);
@@ -95,24 +110,37 @@ function request(url, options, data) {
                 --countParallelRequest;
                 let { statusCode, headers } = res;
                 const contentLength = headers["content-length"];
-                const contentType = headers["content-type"] || '';
+                const contentType = headers["content-type"] || "";
 
                 /*
                 Support only application/json
                  */
                 if (contentType.indexOf("application/json") < 0) {
                     requestIsDone = false;
-                    reject(new Error(`Server return unsupported content type request: "${contentType}"`));
+                    reject(
+                        new Error(
+                            `Server return unsupported content type request: "${contentType}"`
+                        )
+                    );
                     return;
                 }
 
                 remainRequests = headers["x-ratelimit-remaining"];
 
                 dErr(currentMinIntervalForRequest, remainRequests);
-                dDebug( `Get response for url: ${url} code: ${statusCode} message: ${res.statusMessage}` );
+                dDebug(
+                    `Get response for url: ${url} code: ${statusCode} message: ${res.statusMessage}`
+                );
                 dDebug(`content length: ${contentLength}`);
 
-                requestIsDone = validateStatusCode(res, actualOptions, resolve, reject, request, url);
+                requestIsDone = validateStatusCode(
+                    res,
+                    actualOptions,
+                    resolve,
+                    reject,
+                    request,
+                    url
+                );
                 let body = "";
                 res.setEncoding("utf-8");
                 res.on("data", (data) => {
@@ -151,7 +179,7 @@ function request(url, options, data) {
                     reject(e);
                 }
             });
-            if(realData){
+            if (realData) {
                 req.write(realData);
             }
             req.end();

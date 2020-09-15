@@ -1,6 +1,6 @@
-const d = require('debug');
-const info = d('www:info');
-const debug = d('www:debug');
+const d = require("debug");
+const info = d("www:info");
+const debug = d("www:debug");
 
 /**
  *
@@ -29,9 +29,7 @@ function validateStatusCode(res, options, resolve, reject, request, url) {
         case 307:
         case 308:
             requestIsDone = false;
-            info(
-                `Redirect url: ${url} statusCode: ${statusCode}`
-            );
+            info(`Redirect url: ${url} statusCode: ${statusCode}`);
             request(location, options).then(resolve, reject);
             break;
         case 401:
@@ -42,6 +40,5 @@ function validateStatusCode(res, options, resolve, reject, request, url) {
     }
     return requestIsDone;
 }
-
 
 module.exports = validateStatusCode;
