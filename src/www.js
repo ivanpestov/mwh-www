@@ -36,10 +36,19 @@ let timeStampLastRequest = Date.now() - minIntervalForRequest;
 /**
  *
  * @param {string} url
- * @param {object} options as native nodejs options for {@link http:request}
+ * @param {Object} options as native nodejs options for {@link http:request}
+ * @param {Object|string} data
  * @return {Promise<response>}
  */
-function request(url, options) {
+function request(url, options, data) {
+    let realData;
+    if(data && typeof data === 'object' && data.constructor.name === 'Object'){
+        realData = JSON.stringify(data);
+    }else if(typeof data === "string" && data.length > 0){
+        realData = data;
+    }else{
+        throw new TypeError(`Unsupported type of data: "${typeof data}"`);
+    }
     const actualOptions = _validateOptions(options);
     dDebug(`Url: ${url}`);
     let executor = (resolve, reject) => {
@@ -82,11 +91,12 @@ function request(url, options) {
                 reject(new Error(`Unsupported protocol for url: "${url}"`));
             }
 
-            const req = web.get(url, actualOptions, (res) => {
+            const req = web.request(url, actualOptions, (res) => {
                 --countParallelRequest;
                 let { statusCode, headers } = res;
                 const contentLength = headers["content-length"];
                 const contentType = headers["content-type"] || '';
+
                 /*
                 Support only application/json
                  */
@@ -141,6 +151,10 @@ function request(url, options) {
                     reject(e);
                 }
             });
+            if(realData){
+                req.write(realData);
+            }
+            req.end();
         }
     };
     return new Promise(executor);
