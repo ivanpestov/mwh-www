@@ -45,7 +45,8 @@ function request(url, options, data) {
     if (
         data &&
         typeof data === "object" &&
-        data.constructor.name === "Object"
+        (data.constructor.name === "Object" ||
+            data.constructor.name === "Array")
     ) {
         realData = JSON.stringify(data);
     } else if (typeof data === "string" && data.length > 0) {
