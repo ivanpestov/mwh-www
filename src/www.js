@@ -120,7 +120,8 @@ function request(url, options, data) {
                     requestIsDone = false;
                     reject(
                         new Error(
-                            `Server return unsupported content type request: "${contentType}"`
+                            `Server return unsupported content type : "${contentType}" ` +
+                            `headers is: ${JSON.stringify(headers)}`
                         )
                     );
                     return;
