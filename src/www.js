@@ -45,8 +45,7 @@ function request(url, options, data) {
     if (
         data &&
         typeof data === "object" &&
-        (data.constructor.name === "Object" ||
-            data.constructor.name === "Array")
+        (data.constructor.name === "Object" || data.constructor.name === "Array")
     ) {
         realData = JSON.stringify(data);
     } else if (typeof data === "string" && data.length > 0) {
@@ -68,16 +67,11 @@ function request(url, options, data) {
         if (remainRequests > 90) {
             --currentMinIntervalForRequest;
             currentMinIntervalForRequest =
-                currentMinIntervalForRequest <= 0
-                    ? 0
-                    : currentMinIntervalForRequest;
+                currentMinIntervalForRequest <= 0 ? 0 : currentMinIntervalForRequest;
         } else {
+            currentMinIntervalForRequest = (currentMinIntervalForRequest || 1) * 1.03;
             currentMinIntervalForRequest =
-                (currentMinIntervalForRequest || 1) * 1.03;
-            currentMinIntervalForRequest =
-                currentMinIntervalForRequest > 1000
-                    ? 1000
-                    : currentMinIntervalForRequest;
+                currentMinIntervalForRequest > 1000 ? 1000 : currentMinIntervalForRequest;
         }
         if (!remainRequests) {
             setTimeout(() => {
@@ -85,10 +79,7 @@ function request(url, options, data) {
                 remainRequests = 100;
             }, 1000);
         }
-        if (
-            remainRequests > 0 &&
-            countParallelRequest < maxNumParallelRequests
-        ) {
+        if (remainRequests > 0 && countParallelRequest < maxNumParallelRequests) {
             startRequest();
         } else {
             setTimeout(executor, currentMinIntervalForRequest, resolve, reject);
@@ -121,7 +112,7 @@ function request(url, options, data) {
                     reject(
                         new Error(
                             `Server return unsupported content type : "${contentType}" ` +
-                            `headers is: ${JSON.stringify(headers)}`
+                                `headers is: ${JSON.stringify(headers)}`
                         )
                     );
                     return;
@@ -160,14 +151,10 @@ function request(url, options, data) {
                 res.on("end", () => {
                     if (requestIsDone) {
                         res.body = JSON.parse(body);
-                        dInfo(
-                            `Success response for url: ${url} statusCode: ${statusCode}`
-                        );
+                        dInfo(`Success response for url: ${url} statusCode: ${statusCode}`);
                         resolve(res);
                     } else {
-                        dInfo(
-                            `Bad response for url: ${url} statusCode: ${statusCode}`
-                        );
+                        dInfo(`Bad response for url: ${url} statusCode: ${statusCode}`);
                         reject("Cant get body");
                     }
                 });
@@ -209,7 +196,7 @@ function _validateOptions(options, resolve, reject) {
  * @param {Object} [conf]
  * @param {int} [conf.minIntervalForRequest=0] - for restricting interval between
  * requests
- * @return {request}
+ * @return {Promise<request>}
  */
 exports.getFetch = function getFetch(conf) {
     const c = Object.assign({}, conf);

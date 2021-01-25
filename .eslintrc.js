@@ -37,9 +37,7 @@ function getRules() {
             break;
 
         default:
-            throw new Error(
-                `Environment "${env}" is not supported for my .eslint file`
-            );
+            throw new Error(`Environment "${env}" is not supported for my .eslint file`);
     }
 
     return rules;

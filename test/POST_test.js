@@ -17,8 +17,7 @@ const requestBody = {
         meta: {
             href:
                 "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/c38e50b0-acdc-11e6-5bed-427b0000009e",
-            metadataHref:
-                "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/metadata",
+            metadataHref: "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/metadata",
             type: "processingplan",
             mediaType: "application/json",
         },
@@ -42,8 +41,7 @@ const responseBody = {
     meta: {
         href:
             "https://online.moysklad.ru/api/remap/1.2/entity/processingorder/c49e83b3-01af-11e6-9464-e4de00000026",
-        metadataHref:
-            "https://online.moysklad.ru/api/remap/1.2/entity/processingorder/metadata",
+        metadataHref: "https://online.moysklad.ru/api/remap/1.2/entity/processingorder/metadata",
         type: "processingorder",
         mediaType: "application/json",
     },
@@ -57,8 +55,7 @@ const responseBody = {
         meta: {
             href:
                 "https://online.moysklad.ru/api/remap/1.2/entity/employee/faba7f37-2e58-11e6-8a84-bae500000028",
-            metadataHref:
-                "https://online.moysklad.ru/api/remap/1.2/entity/employee/metadata",
+            metadataHref: "https://online.moysklad.ru/api/remap/1.2/entity/employee/metadata",
             type: "employee",
             mediaType: "application/json",
         },
@@ -68,8 +65,7 @@ const responseBody = {
         meta: {
             href:
                 "https://online.moysklad.ru/api/remap/1.2/entity/group/f97aa1fb-2e58-11e6-8a84-bae500000002",
-            metadataHref:
-                "https://online.moysklad.ru/api/remap/1.2/entity/group/metadata",
+            metadataHref: "https://online.moysklad.ru/api/remap/1.2/entity/group/metadata",
             type: "group",
             mediaType: "application/json",
         },
@@ -81,8 +77,7 @@ const responseBody = {
         meta: {
             href:
                 "https://online.moysklad.ru/api/remap/1.2/entity/organization/850c8195-f504-11e5-8a84-bae50000015e",
-            metadataHref:
-                "https://online.moysklad.ru/api/remap/1.2/entity/organization/metadata",
+            metadataHref: "https://online.moysklad.ru/api/remap/1.2/entity/organization/metadata",
             type: "organization",
             mediaType: "application/json",
         },
@@ -122,8 +117,7 @@ const responseBody = {
         meta: {
             href:
                 "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/c38e50b0-acdc-11e6-5bed-427b0000009e",
-            metadataHref:
-                "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/metadata",
+            metadataHref: "http://online.moysklad.ru/api/remap/1.2/entity/processingplan/metadata",
             type: "processingplan",
             mediaType: "application/json",
         },
