@@ -100,7 +100,7 @@ function request(url, options, data) {
 
             const req = web.request(url, actualOptions, (res) => {
                 --countParallelRequest;
-                let { statusCode, headers } = res;
+                let { statusCode, headers, statusMessage } = res;
                 const contentLength = headers["content-length"];
                 const contentType = headers["content-type"] || "";
 
@@ -112,6 +112,7 @@ function request(url, options, data) {
                     reject(
                         new Error(
                             `Server return unsupported content type : "${contentType}" ` +
+                            `statusCode: ${statusCode}, statusMessage: ${statusMessage}` +
                                 `headers is: ${JSON.stringify(headers)}`
                         )
                     );
