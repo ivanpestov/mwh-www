@@ -104,6 +104,16 @@ function request(url, options, data) {
                 const contentLength = headers["content-length"];
                 const contentType = headers["content-type"] || "";
 
+                if (statusCode >= 300) {
+                    requestIsDone = false;
+                    reject(
+                        new Error( `Server return error statusCode : "${statusCode}" ` +
+                            `statusMessage: ${statusMessage}` +
+                                `headers is: ${JSON.stringify(headers)}`)
+                    );
+                    return;
+                }
+
                 /*
                 Support only application/json
                  */
