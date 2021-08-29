@@ -186,7 +186,7 @@ function request(url, options, data) {
  * @private
  * @return {Object}
  */
-function _validateOptions(options, resolve, reject) {
+function _validateOptions(options) {
     const actualOptions = Object.assign({}, options);
     actualOptions.method = actualOptions.method || "GET";
     return actualOptions;
