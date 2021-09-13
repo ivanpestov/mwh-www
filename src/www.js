@@ -103,9 +103,19 @@ function request(url, options, data) {
                 let { statusCode, headers, statusMessage } = res;
                 const contentLength = headers["content-length"];
                 const contentType = headers["content-type"] || "";
+                if (headers.location) {
+                  url = headers.location
+                  delete actualOptions.path
+                  delete actualOptions.auth
+                  dInfo('Redirect to "%s"', url)
+                  dInfo('Optios is: %o', options)
+                  startRequest()
+                  return
+                }
 
                 if (statusCode >= 300) {
                     requestIsDone = false;
+                    debug(res)
                     reject(
                         new Error( `Server return error statusCode : "${statusCode}" ` +
                             `statusMessage: ${statusMessage}` +
@@ -115,9 +125,9 @@ function request(url, options, data) {
                 }
 
                 /*
-                Support only application/json
+                Support only application/json and image
                  */
-                if (contentType.indexOf("application/json") < 0) {
+                if (!contentType.includes("json") && !contentType.includes('image')) {
                     requestIsDone = false;
                     reject(
                         new Error(
@@ -145,10 +155,12 @@ function request(url, options, data) {
                     request,
                     url
                 );
-                let body = "";
-                res.setEncoding("utf-8");
+                let bufferChunks = [];
+                let lentthCount = 0;
                 res.on("data", (data) => {
-                    body += data;
+                    bufferChunks.push(data)
+                    dInfo('data.length = %d', data.length)
+                    lentthCount += data.length
                 });
                 res.on("error", (err) => {
                     err(`Error on response ${err.message}`);
@@ -160,14 +172,22 @@ function request(url, options, data) {
                     }
                 });
                 res.on("end", () => {
-                    if (requestIsDone) {
-                        res.body = JSON.parse(body);
-                        dInfo(`Success response for url: ${url} statusCode: ${statusCode}`);
-                        resolve(res);
-                    } else {
+                    if (!requestIsDone) {
                         dInfo(`Bad response for url: ${url} statusCode: ${statusCode}`);
                         reject("Cant get body");
+                      return
                     }
+                    const responseBodyBuffer = Buffer.concat(bufferChunks)
+                    if (contentType.includes('json')) {
+                      res.body = JSON.parse(responseBodyBuffer.toString('utf-8'))
+                      dInfo(`Success response for url: ${url} statusCode: ${statusCode}`);
+                    } else if (contentType.includes('image')) {
+                      res.body = responseBodyBuffer
+                      dInfo({ lentthCount })
+                    } else {
+                      reject(new Error('Unexpected behavior. Content type must be a image or json'))
+                    }
+                    resolve(res);
                 });
             });
             req.on("error", (e) => {
