@@ -16,14 +16,14 @@
         "deploy": "rsync -rl --exclude logs/ --include node_modules/app  --exclude 'node_modules/*' ./ vps:~/www/report && date"
     },
     "dependencies": {
-        "@types/node": "^14.10.1",
         "debug": "^4.1.1",
-        "dotenv": "^8.2.0"
+        "dotenv": "^8.6.0"
     },
     "devDependencies": {
         "@types/chai": "^4.2.12",
         "@types/mocha": "^8.0.3",
         "@types/nock": "^11.1.0",
+        "@types/node": "^14.10.1",
         "chai": "^4.2.0",
         "eslint": "^7.7.0",
         "eslint-config-prettier": "^6.11.0",
