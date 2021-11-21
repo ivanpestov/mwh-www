@@ -115,7 +115,7 @@ function request(url, options, data) {
 
                 if (statusCode >= 300) {
                     requestIsDone = false;
-                    debug(res)
+                    dDebug(res)
                     reject(
                         new Error( `Server return error statusCode : "${statusCode}" ` +
                             `statusMessage: ${statusMessage}` +
