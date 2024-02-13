@@ -1,3 +1,4 @@
+const zlib = require('node:zlib');
 /**
  * Wrapper for native nodejs request
  * response Promise with native node {@link http.IncomingMessage}
@@ -178,16 +179,17 @@ function request(url, options, data) {
                       return
                     }
                     const responseBodyBuffer = Buffer.concat(bufferChunks)
-                    if (contentType.includes('json')) {
-                      res.body = JSON.parse(responseBodyBuffer.toString('utf-8'))
-                      dInfo(`Success response for url: ${url} statusCode: ${statusCode}`);
-                    } else if (contentType.includes('image')) {
-                      res.body = responseBodyBuffer
-                      dInfo({ lentthCount })
+                    if ((res.headers['content-encoding'] || '').includes('gzip')) {
+                      zlib.gunzip(responseBodyBuffer, null, (err, buffer) => {
+                        if (err) {
+                          reject(err);
+                          return;
+                        }
+                        _resolveWithContent(buffer, contentType, url, statusCode, res, resolve, reject);
+                      });
                     } else {
-                      reject(new Error('Unexpected behavior. Content type must be a image or json'))
+                        _resolveWithContent(responseBodyBuffer, contentType, url, statusCode, res, resolve, reject);
                     }
-                    resolve(res);
                 });
             });
             req.on("error", (e) => {
@@ -219,7 +221,22 @@ function request(url, options, data) {
 function _validateOptions(options) {
     const actualOptions = Object.assign({}, options);
     actualOptions.method = actualOptions.method || "GET";
+    actualOptions.headers = actualOptions.headers || {};
+    actualOptions.headers['Accept-Encoding'] = 'gzip';
     return actualOptions;
+}
+
+function _resolveWithContent(responseBodyBuffer, contentType, url, statusCode, res, resolve, reject) {
+    if (contentType.includes('json')) {
+      res.body = JSON.parse(responseBodyBuffer.toString('utf-8'))
+      dInfo(`Success response for url: ${url} statusCode: ${statusCode}`);
+    } else if (contentType.includes('image')) {
+      res.body = responseBodyBuffer
+      dInfo({ lentthCount })
+    } else {
+      reject(new Error('Unexpected behavior. Content type must be a image or json'))
+    }
+    resolve(res);
 }
 
 /**
@@ -234,3 +251,4 @@ exports.getFetch = function getFetch(conf) {
     currentMinIntervalForRequest = c.minIntervalForRequest || 0;
     return request;
 };
+
