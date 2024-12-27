@@ -164,7 +164,6 @@ function request(url, options, data) {
                     lentthCount += data.length
                 });
                 res.on("error", (err) => {
-                    err(`Error on response ${err.message}`);
                     if (countOfBadRequests < 2) {
                         countOfBadRequests++;
                         process.nextTick(executor, resolve, reject);
