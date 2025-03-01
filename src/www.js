@@ -33,6 +33,7 @@ const  MWH_RETRY_TIMEINTERVAL = process.env.MWH_RETRY_TIMEINTERVAL * 1;
 // value from response header "x-ratelimit-limit"
 const  MWH_LIMIT  = process.env.MWH_LIMIT * 1;
 const  MWH_MAX_NUM_PARALLEL_REQUESTS  = process.env.MWH_MAX_NUM_PARALLEL_REQUESTS * 1;
+const  MWH_MIN_EDGE_TO_SPEED_UP_COEFICIENT  = process.env.MWH_MIN_EDGE_TO_SPEED_UP_COEFICIENT * 1;
 
 if(! MWH_RETRY_TIMEINTERVAL > 0) {
   throw new Error('Environment variable "MWH_RETRY_TIMEINTERVAL" is not defined');
@@ -43,12 +44,15 @@ if(! MWH_LIMIT > 0) {
 if(! MWH_MAX_NUM_PARALLEL_REQUESTS > 1) {
   throw new Error('Environment variable "MWH_MAX_NUM_PARALLEL_REQUESTS" is not defined');
 }
+if(! MWH_MIN_EDGE_TO_SPEED_UP_COEFICIENT > 0.1) {
+  throw new Error('Environment variable "MWH_MIN_EDGE_TO_SPEED_UP_COEFICIENT" is not defined');
+}
 
 
 
 let minIntervalForRequest = parseInt(MWH_RETRY_TIMEINTERVAL/MWH_LIMIT) + 1,
     currentMinIntervalForRequest;
-const MIN_EDGE_TO_SPEED_UP = parseInt(minIntervalForRequest * 0.6)
+const MIN_EDGE_TO_SPEED_UP = parseInt(minIntervalForRequest * MWH_MIN_EDGE_TO_SPEED_UP_COEFICIENT)
 const RATE_TO_SPEED_DOWN = 1.03;
 let countParallelRequest = 0;
 let remainRequests = Number.MAX_SAFE_INTEGER;
